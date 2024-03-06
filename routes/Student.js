@@ -137,7 +137,6 @@ router.post("/login",
    upload.single("image"),
    body("name").isString(),
    body("Eygptian").isBoolean(),
-   body("Arrival").isBoolean(),
    body("nationalID").isString().isLength({ min:9 ,max:14}).withMessage("please enter valid nationalID "),
    body("studentCode").isString().isLength({min:11,max:11}).withMessage("studentcode should be 11 character"),
    body("birthDate").isDate().withMessage("enter your birthdate"),
@@ -228,7 +227,6 @@ router.post("/login",
         image_url:req.file.originalname,
         name: req.body.name,
         Eygptian:req.body.Eygptian,
-        Arrival:req.body.Arrival,
         nationalID:req.body.nationalID,
         studentCode:req.body.studentCode,
         birthDate:req.body.birthDate,
@@ -281,7 +279,6 @@ router.post("/addrequestoldstudent",
 upload.single("image"),
 body("name").isString(),
 body("Eygptian").isBoolean(),
-body("Arrival").isBoolean(),
 body("nationalID").isString().isLength({ min:9 ,max:14}).withMessage("please enter valid nationalID "),
 body("studentCode").isString().isLength({min:11,max:11}).withMessage("studentcode should be 11 character"),
 body("birthDate").isDate().withMessage("enter your birthdate"),
@@ -327,9 +324,10 @@ async(req,res)=>{
     if (!errors.isEmpty()) {
      res.status(400).json({ errors: errors.array() });
      }
-     
+     //for cleaning national_id from spaces
+     const cleanednationalIDNumber = req.body.nationalID.trim();
      const query = util.promisify(conn.query).bind(conn);
-     const checkstudentExist=await query("select * from oldstudent where nationalID=?",[req.body.nationalID]);
+     const checkstudentExist=await query("select * from oldstudent where nationalID=?",cleanednationalIDNumber);
      if(checkstudentExist.length>0){
        res.status(400).json({
           errors:[{ 
@@ -361,7 +359,6 @@ async(req,res)=>{
      image_url:req.file.originalname,
      name: req.body.name,
      Eygptian:req.body.Eygptian,
-     Arrival:req.body.Arrival,
      nationalID:req.body.nationalID,
      studentCode:req.body.studentCode,
      birthDate:req.body.birthDate,
@@ -415,7 +412,6 @@ router.put("/updatenewstudent/:id",
 upload.single("image"),
 body("name").isString(),
 body("Eygptian").isBoolean(),
-body("Arrival").isBoolean(),
 body("nationalID").isString().isLength({ min:9 ,max:14}).withMessage("please enter valid nationalID "),
 body("studentCode").isString().isLength({min:11,max:11}).withMessage("studentcode should be 11 character"),
 body("birthDate").isDate().withMessage("enter your birthdate"),
@@ -493,7 +489,6 @@ body("ConfirmPassword").isLength({min:9,max:14}).withMessage("confirm password (
         image_url:req.file.originalname,
         name: req.body.name,
         Eygptian:req.body.Eygptian,
-        Arrival:req.body.Arrival,
         nationalID:req.body.nationalID,
         studentCode:req.body.studentCode,
         birthDate:req.body.birthDate,
@@ -529,12 +524,18 @@ body("ConfirmPassword").isLength({min:9,max:14}).withMessage("confirm password (
         admin_id:req.body.admin_id || null
 
       };
+     // Check if a new image is provided in the request
+     if (req.file && fs.existsSync("./upload/" + user[0].image_url)) {
+      // File exists and a new image is provided, proceed with deletion
+      fs.unlinkSync("./upload/" + user[0].image_url);
+       }
 
-      if (fs.existsSync("./upload/" + user[0].image_url)) {
-        // File exists, proceed with deletion
-        fs.unlinkSync("./upload/" + user[0].image_url);
+      // Check if no new image is provided and the existing image still exists
+      if (!req.file && !fs.existsSync("./upload/" + user[0].image_url)) {
+      // No new image provided and existing image still exists, do something (e.g., log a message)
       }
-    
+
+
       // update student in the database
       await query("update newstudent set ? where id=?", [userData, user[0].id]);
 
@@ -547,12 +548,11 @@ body("ConfirmPassword").isLength({min:9,max:14}).withMessage("confirm password (
     }
   });
 
-  //update new student info 
+  //update oldstudent info 
 router.put("/updateoldstudent/:id",
 upload.single("image"),
 body("name").isString(),
 body("Eygptian").isBoolean(),
-body("Arrival").isBoolean(),
 body("nationalID").isString().isLength({ min:9 ,max:14}).withMessage("please enter valid nationalID "),
 body("studentCode").isString().isLength({min:11,max:11}).withMessage("studentcode should be 11 character"),
 body("birthDate").isDate().withMessage("enter your birthdate"),
@@ -617,7 +617,6 @@ body("ConfirmPassword").isLength({min:9,max:14}).withMessage("confirm password (
         image_url:req.file.originalname,
         name: req.body.name,
         Eygptian:req.body.Eygptian,
-        Arrival:req.body.Arrival,
         nationalID:req.body.nationalID,
         studentCode:req.body.studentCode,
         birthDate:req.body.birthDate,
@@ -654,11 +653,19 @@ body("ConfirmPassword").isLength({min:9,max:14}).withMessage("confirm password (
    
       };
 
-      if (fs.existsSync("./upload/" + user[0].image_url)) {
-        // File exists, proceed with deletion
-        fs.unlinkSync("./upload/" + user[0].image_url);
-      }
-    
+     // Check if a new image is provided in the request
+      if (req.file && fs.existsSync("./upload/" + user[0].image_url)) {
+      // File exists and a new image is provided, proceed with deletion
+      fs.unlinkSync("./upload/" + user[0].image_url);
+       }
+
+     // Check if no new image is provided and the existing image still exists
+     if (!req.file && !fs.existsSync("./upload/" + user[0].image_url)) {
+      // No new image provided and existing image still exists, do something (e.g., log a message)
+    }
+
+// Rest of the code for updating the student record
+
       // update student in the database
       await query("update oldstudent set ? where id=?", [userData, user[0].id]);
 
@@ -672,35 +679,122 @@ body("ConfirmPassword").isLength({min:9,max:14}).withMessage("confirm password (
   });
 
 
-//search about result 
-router.get("/searchstudent/:national_id", async (req, res) => {
-  try {
-    const national_id = req.params.national_id;
 
+// function search 
+router.post('/searchStudent', async (req, res) => {
+  try {
+    const { national_id } = req.body;
     const query = util.promisify(conn.query).bind(conn);
 
-    // Search for the student in the status1 table
-    const statusResult = await query(
-      "SELECT name, building_number FROM status1 WHERE national_id = ?",
-      [national_id]
-    );
+    // Search in status1 table
+    const status1Result = await query(`
+      SELECT name, national_id, building_number, college_name
+      FROM status1
+      WHERE national_id = ?
+    `, [national_id]);
 
-    if (statusResult.length > 0) {
-      // If a match is found in status1, return name and building_number
-      res.status(200).json({
-        name: statusResult[0].name,
-        building_number: statusResult[0].building_number
+    if (status1Result.length > 0) {
+      return res.status(200).json({ result: status1Result });
+    }
+
+    // Search in status2 table
+    const status2Result = await query(`
+      SELECT name, national_id, building_number, college_name
+      FROM status2
+      WHERE national_id = ?
+    `, [national_id]);
+
+    if (status2Result.length > 0) {
+      return res.status(200).json({ result: status2Result });
+    }
+
+    // Search in oldstudent table if gpa not 5 or 6 or 7 or 8 and in status 1 or 2 or 3 or 4
+    const oldStudentResult = await query(`
+    SELECT os.name, os.nationalID, c.name AS college_name, g.status AS governorate_status
+    FROM oldstudent os
+    JOIN college c ON os.college_id = c.id
+    JOIN governorate g ON os.governorate_id = g.id
+    WHERE os.nationalID = ? AND os.gpa_id NOT IN (5, 6, 7, 8)
+  `, [national_id]);
+  
+  if (oldStudentResult.length > 0) {
+    const student = oldStudentResult[0];
+    const { name, national_id, college_name, governorate_status } = student;
+  
+    // Check governorate status
+    if (governorate_status === 1 || governorate_status === 2 || governorate_status === 3 || governorate_status === 4) {
+      return res.status(200).json({
+        result: { name, national_id, college_name },
+        message: 'GPA not good enough to be accepted or Governorate status not suitable.'
       });
-    res.status(200).json(result);
+    } 
+  } 
+
+    // Continue searching in oldstudent table based on different conditions
+    const oldStudentCityResult = await query(`
+      SELECT os.name, os.nationalID, c.name AS college_name
+      FROM oldstudent os
+      JOIN college c ON os.college_id = c.id
+      WHERE os.nationalID = ? AND os.gpa_id NOT IN (5, 6, 7, 8) AND os.city_id IN (79, 236)
+    `, [national_id]);
+
+    if (oldStudentCityResult.length > 0) {
+      return res.status(200).json({
+        result: oldStudentCityResult,
+        message: 'GPA not good enough to be accepted in the specified city.'
+      });
     }
-    else {
-      res.status(404).json({
-        msg: "Student information still processing "
-       })
+    // old student gpa not 5 or 6 or 7 or 8 and city not 79 or 236
+    const oldStudentOutOfRangeResult = await query(`
+      SELECT os.name, os.nationalID, c.name AS college_name
+      FROM oldstudent os
+      JOIN college c ON os.college_id = c.id
+      WHERE os.nationalID = ? AND os.gpa_id NOT IN (5, 6, 7, 8) AND os.city_id NOT IN (79, 236)
+    `, [national_id]);
+
+    if (oldStudentOutOfRangeResult.length > 0) {
+      return res.status(200).json({
+        result: oldStudentOutOfRangeResult,
+        message: 'استبعاد النطاق (Out of Range).'
+      });
     }
+    //search in old student if gpa is 5 or 6 or 7 or 8 and in city not )79 or 236 
+     const oldStudentOutOfRangeResult2 = await query(`
+      SELECT os.name, os.nationalID, c.name AS college_name
+      FROM oldstudent os
+      JOIN college c ON os.college_id = c.id
+      WHERE os.nationalID = ? AND os.gpa_id  IN (5, 6, 7, 8) AND os.city_id NOT IN (79, 236)
+    `, [national_id]);
+
+    if (oldStudentOutOfRangeResult2.length > 0) {
+      return res.status(200).json({
+        result: oldStudentOutOfRangeResult2,
+        message: 'استبعاد النطاق (Out of Range).'
+      });
+    }
+    //  searching in newstudent table based on different conditions
+    const newStudentCityResult = await query(`
+      SELECT ns.name, ns.nationalID, c.name AS college_name
+      FROM newstudent ns
+      JOIN college c ON ns.college_id = c.id
+      WHERE ns.nationalID = ? AND ns.city_id NOT IN (79, 236)
+    `, [national_id]);
+
+    if (newStudentCityResult.length > 0) {
+      return res.status(200).json({
+        result: newStudentCityResult,
+        message: 'رفض النطاق (City Rejection).'
+      });
+    }
+
+    // Return a default message
+    return res.status(200).json({
+      message: 'لم يتم مراجعة بياناتك (Your data has not been reviewed).'
+    });
+
   } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

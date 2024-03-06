@@ -92,6 +92,45 @@ router.get("/getcities", async (req, res) => {
     res.status(500).json(err);
   }
 });
+//update governorate 
+router.post("/updatestudentgovernorate", async (req, res) => {
+  try {
+    const { studentId, governorateName } = req.body;
 
+    // Validate inputs
+    if (!studentId || !governorateName) {
+      return res.status(400).json({ error: "Invalid input parameters" });
+    }
+    const query = util.promisify(conn.query).bind(conn);
+
+    // Perform a lookup to get the governorate_id based on the governorate name
+    const governorateResult = await query(`
+      SELECT id FROM governorate WHERE name = ?
+    `, [governorateName]);
+
+    if (governorateResult.length === 0) {
+      return res.status(404).json({ error: "Governorate not found" });
+    }
+
+    const governorateId = governorateResult[0].id;
+
+    // Update the governorate_id in the student table
+    const updateResult = await query(`
+      UPDATE student
+      SET governorate_id = ?
+      WHERE id = ?
+    `, [governorateId, studentId]);
+
+    // Check the affected rows to determine if the update was successful
+    if (updateResult.affectedRows > 0) {
+      return res.status(200).json({ msg: "Governorate updated successfully" });
+    } else {
+      return res.status(404).json({ error: "Student not found or no changes made" });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 module.exports = router;
