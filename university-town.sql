@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 06, 2024 at 01:51 AM
+-- Generation Time: Apr 25, 2024 at 05:26 PM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 7.4.27
 
@@ -65,7 +65,7 @@ CREATE TABLE `buildings` (
   `gender` enum('Male','Female','','') NOT NULL,
   `number_of_rooms` int(11) NOT NULL,
   `number_of_floors` int(11) NOT NULL,
-  `admin_id` int(11) NOT NULL
+  `admin_id` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -80,7 +80,8 @@ INSERT INTO `buildings` (`id`, `number`, `gender`, `number_of_rooms`, `number_of
 (5, 2, 'Female', 170, 6, 1),
 (6, 4, 'Female', 170, 6, 1),
 (7, 12, 'Female', 160, 6, 1),
-(8, 18, 'Female', 160, 6, 1);
+(8, 18, 'Female', 160, 6, 1),
+(12, 14, 'Female', 200, 6, 1);
 
 -- --------------------------------------------------------
 
@@ -92,13 +93,6 @@ CREATE TABLE `buildingsemployee` (
   `building_id` int(11) NOT NULL,
   `employee_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `buildingsemployee`
---
-
-INSERT INTO `buildingsemployee` (`building_id`, `employee_id`) VALUES
-(1, 1);
 
 -- --------------------------------------------------------
 
@@ -698,18 +692,17 @@ INSERT INTO `collegelevel` (`college_id`, `level_id`) VALUES
 CREATE TABLE `employee` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
+  `national_ID` varchar(14) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `admin_id` int(11) NOT NULL
+  `admin_id` int(11) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `employee`
 --
 
-INSERT INTO `employee` (`id`, `name`, `password`, `admin_id`) VALUES
-(1, 'رمضان', '123456789', 1),
-(3, 'اسماء رجب', '123456733', 1),
-(6, 'لمياء', '12345673', 1);
+INSERT INTO `employee` (`id`, `name`, `national_ID`, `password`, `admin_id`) VALUES
+(3, 'اسماء رجب', '12245678923456', '123456733', 1);
 
 -- --------------------------------------------------------
 
@@ -819,55 +812,58 @@ INSERT INTO `levels` (`id`, `name`) VALUES
 
 CREATE TABLE `newstudent` (
   `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `image_url` varchar(255) NOT NULL,
-  `Eygptian` tinyint(1) NOT NULL,
-  `nationalID` varchar(14) NOT NULL,
-  `studentCode` varchar(11) NOT NULL,
-  `birthDate` date NOT NULL,
-  `gender` enum('Male','Female','','') NOT NULL,
-  `religion` enum('muslim','christian','','') NOT NULL,
-  `phoneNumber` varchar(11) NOT NULL,
-  `mobileNumber` varchar(11) NOT NULL,
-  `fatherName` varchar(255) NOT NULL,
-  `fatherNationalID` varchar(14) NOT NULL,
-  `fatherOccupation` varchar(255) NOT NULL,
-  `fatherPhone` varchar(11) NOT NULL,
-  `GuardianName` varchar(255) NOT NULL,
-  `GuardianNationalID` varchar(14) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `Eygptian` tinyint(1) DEFAULT NULL,
+  `nationalID` varchar(14) DEFAULT NULL,
+  `studentCode` varchar(11) DEFAULT NULL,
+  `birthDate` date DEFAULT NULL,
+  `gender` enum('Male','Female','','') DEFAULT NULL,
+  `religion` enum('muslim','christian','','') DEFAULT NULL,
+  `phoneNumber` varchar(11) DEFAULT NULL,
+  `mobileNumber` varchar(11) DEFAULT NULL,
+  `fatherName` varchar(255) DEFAULT NULL,
+  `fatherNationalID` varchar(14) DEFAULT NULL,
+  `fatherOccupation` varchar(255) DEFAULT NULL,
+  `fatherPhone` varchar(11) DEFAULT NULL,
+  `GuardianName` varchar(255) DEFAULT NULL,
+  `GuardianNationalID` varchar(14) DEFAULT NULL,
   `ParentsStatus` enum('Father Death','Parents Death','Parental Separation','Alive') DEFAULT NULL,
-  `GuardianPhoneNumber` varchar(11) NOT NULL,
-  `GuardianRelation` varchar(255) NOT NULL,
-  `HousingType` enum('nonspecial','special','','') NOT NULL,
-  `HousingWithoutCatering` tinyint(1) NOT NULL COMMENT 'without ==>1\r\nwith ==>0',
-  `FamilyAbroad` tinyint(1) NOT NULL COMMENT 'familyabroad ==>1\r\nfamilynotabroad ==>0',
-  `SpecialNeed` tinyint(1) NOT NULL COMMENT '0 ==>not special need \r\n1 ==> special need',
-  `SecondaryEducationTotalScore` decimal(10,0) NOT NULL,
-  `SecondaryEducationRate` decimal(10,0) NOT NULL,
+  `GuardianPhoneNumber` varchar(11) DEFAULT NULL,
+  `GuardianRelation` varchar(255) DEFAULT NULL,
+  `HousingType` enum('nonspecial','special','','') DEFAULT NULL,
+  `HousingWithoutCatering` tinyint(1) DEFAULT NULL COMMENT 'without ==>1\r\nwith ==>0',
+  `FamilyAbroad` tinyint(1) DEFAULT NULL COMMENT 'familyabroad ==>1\r\nfamilynotabroad ==>0',
+  `SpecialNeed` tinyint(1) DEFAULT NULL COMMENT '0 ==>not special need \r\n1 ==> special need',
+  `SecondaryEducationTotalScore` decimal(10,0) DEFAULT NULL,
+  `SecondaryEducationRate` decimal(10,0) DEFAULT NULL,
   `SecondaryEducationAbroad` tinyint(1) DEFAULT NULL,
-  `SecondaryEducationDivision` enum('علمى علوم','علمى رياضة','ادبى','ازهرى علمى','ازهرى ادبى','معاهد فنية ثلاث سنوات','معاهد فنية اربع سنوات','معاهد فنية خمس سنوات','دبلومات فنية','شهادات معادلة','مدارس  STEM  للعلوم و التكنولوجيا','مدارس النيل للعلوم و التكنولوجيا','تحويل رقمى') NOT NULL,
-  `password` varchar(14) NOT NULL,
-  `college_id` int(11) NOT NULL,
-  `level_id` int(11) NOT NULL,
-  `governorate_id` int(11) NOT NULL,
-  `city_id` int(11) NOT NULL,
-  `address` varchar(255) NOT NULL,
+  `SecondaryEducationDivision` enum('علمى علوم','علمى رياضة','ادبى','ازهرى علمى','ازهرى ادبى','معاهد فنية ثلاث سنوات','معاهد فنية اربع سنوات','معاهد فنية خمس سنوات','دبلومات فنية','شهادات معادلة','مدارس  STEM  للعلوم و التكنولوجيا','مدارس النيل للعلوم و التكنولوجيا','تحويل رقمى') DEFAULT NULL,
+  `password` varchar(14) DEFAULT NULL,
+  `college_id` int(11) DEFAULT NULL,
+  `level_id` int(11) DEFAULT NULL,
+  `governorate_id` int(11) DEFAULT NULL,
+  `city_id` int(11) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
   `building_id` int(11) DEFAULT NULL,
   `employee_id` int(11) DEFAULT NULL,
   `admin_id` int(11) DEFAULT NULL,
-  `ConfirmPassword` varchar(14) NOT NULL
+  `ConfirmPassword` varchar(14) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `newstudent`
 --
 
-INSERT INTO `newstudent` (`id`, `name`, `image_url`, `Eygptian`, `nationalID`, `studentCode`, `birthDate`, `gender`, `religion`, `phoneNumber`, `mobileNumber`, `fatherName`, `fatherNationalID`, `fatherOccupation`, `fatherPhone`, `GuardianName`, `GuardianNationalID`, `ParentsStatus`, `GuardianPhoneNumber`, `GuardianRelation`, `HousingType`, `HousingWithoutCatering`, `FamilyAbroad`, `SpecialNeed`, `SecondaryEducationTotalScore`, `SecondaryEducationRate`, `SecondaryEducationAbroad`, `SecondaryEducationDivision`, `password`, `college_id`, `level_id`, `governorate_id`, `city_id`, `address`, `building_id`, `employee_id`, `admin_id`, `ConfirmPassword`) VALUES
-(2, 'طارق', '', 1, '12345678912345', '12345678912', '2005-02-05', 'Male', 'muslim', '01156478768', '01156478768', 'محمد', '12345678923456', 'مهندس', '01124536783', 'محمد', '12345678954372', '', '', 'الاب', 'nonspecial', 0, 0, 0, '400', '0', 0, 'علمى رياضة', '12345678912345', 1, 1, 17, 1, '', NULL, NULL, NULL, '12345678912345'),
-(12, '   اسماء محمد على', '', 1, '23456789532443', '12345673456', '2005-02-05', 'Female', 'muslim', '01134567288', '01134567288', 'محمد درويش', '01134567288342', '', '01134567288', 'محمد', '01134567288342', '', '', 'الاب', 'nonspecial', 0, 0, 1, '400', '0', 0, 'علمى علوم', '23456789532443', 5, 2, 3, 70, '', NULL, NULL, NULL, '23456789532443'),
-(14, 'رحمة ', 'images.png', 0, '23456789021345', '23452345236', '2005-02-05', 'Female', 'muslim', '01145678356', '01145678356', 'رجب', '11456783566567', '', '01145678356', 'رجب', '11456783566567', 'Alive', '01145678356', 'الاب', 'special', 0, 0, 0, '343', '77', 0, 'ادبى', '23456789021345', 1, 1, 8, 199, 'address', NULL, NULL, NULL, '23456789021345'),
-(21, 'ولاء', '5a8f5ec4f6786ae9d5961eb6b59b0b53.jpg', 1, '234567534 4', '45678934567', '2002-04-08', 'Female', 'muslim', '01115467848', '01115467848', 'سلامة', '2345675347685', '', '01115467848', 'سلامة', '2345675347685', 'Alive', '01115467848', 'الاب', 'nonspecial', 0, 0, 0, '345', '66', 0, 'علمى رياضة', '234567534 4', 6, 2, 2, 79, 'قثبىرلاابتننالايالاللالاساب', NULL, NULL, NULL, '234567534 4'),
-(22, 'علياء', '5a8f5ec4f6786ae9d5961eb6b59b0b53.jpg', 1, '23456753457', '45678934567', '2002-04-08', 'Female', 'muslim', '01115467848', '01115467848', 'سلامة', '2345675347685', '', '01115467848', 'سلامة', '2345675347685', 'Alive', '01115467848', 'الاب', 'special', 0, 0, 0, '345', '66', 0, 'علمى رياضة', '23456753457', 6, 2, 1, 1, 'قثبىرلاابتننالايالاللالاساب', NULL, NULL, NULL, '23456753457');
+INSERT INTO `newstudent` (`id`, `name`, `email`, `Eygptian`, `nationalID`, `studentCode`, `birthDate`, `gender`, `religion`, `phoneNumber`, `mobileNumber`, `fatherName`, `fatherNationalID`, `fatherOccupation`, `fatherPhone`, `GuardianName`, `GuardianNationalID`, `ParentsStatus`, `GuardianPhoneNumber`, `GuardianRelation`, `HousingType`, `HousingWithoutCatering`, `FamilyAbroad`, `SpecialNeed`, `SecondaryEducationTotalScore`, `SecondaryEducationRate`, `SecondaryEducationAbroad`, `SecondaryEducationDivision`, `password`, `college_id`, `level_id`, `governorate_id`, `city_id`, `address`, `building_id`, `employee_id`, `admin_id`, `ConfirmPassword`) VALUES
+(2, 'طارق', NULL, 1, '12345678912345', '12345678912', '2005-02-05', 'Male', 'muslim', '01156478768', '01156478768', 'محمد', '12345678923456', 'مهندس', '01124536783', 'محمد', '12345678954372', '', '', 'الاب', 'nonspecial', 0, 0, 0, '400', '0', 0, 'علمى رياضة', '12345678912345', 1, 1, 17, 1, '', NULL, NULL, NULL, '12345678912345'),
+(12, '   اسماء محمد على', NULL, 1, '23456789532443', '12345673456', '2005-02-05', 'Female', 'muslim', '01134567288', '01134567288', 'محمد درويش', '01134567288342', '', '01134567288', 'محمد', '01134567288342', '', '', 'الاب', 'nonspecial', 0, 0, 1, '400', '0', 0, 'علمى علوم', '23456789532443', 5, 2, 3, 70, '', NULL, NULL, NULL, '23456789532443'),
+(14, 'rrrr', 'wwwww@gmail.com', 1, '54673825467829', '12345678345', '2005-02-05', 'Female', 'muslim', '01112456375', '01112456375', 'ggggg', '01112456375456', '', '01112456375', 'gggg', '2223444566345', 'Alive', '01112456375', 'father', 'special', 1, 0, 0, '342', '77', 0, 'ادبى', '54673825467829', 2, 4, 5, 122, 'dddddd', NULL, NULL, NULL, '54673825467829'),
+(21, 'ولاء', NULL, 1, '234567534 4', '45678934567', '2002-04-08', 'Female', 'muslim', '01115467848', '01115467848', 'سلامة', '2345675347685', '', '01115467848', 'سلامة', '2345675347685', 'Alive', '01115467848', 'الاب', 'nonspecial', 0, 0, 0, '345', '66', 0, 'علمى رياضة', '234567534 4', 6, 2, 2, 79, 'قثبىرلاابتننالايالاللالاساب', NULL, NULL, NULL, '234567534 4'),
+(22, 'علياء', NULL, 1, '23456753457', '45678934567', '2002-04-08', 'Female', 'muslim', '01115467848', '01115467848', 'سلامة', '2345675347685', '', '01115467848', 'سلامة', '2345675347685', 'Alive', '01115467848', 'الاب', 'special', 0, 0, 0, '345', '66', 0, 'علمى رياضة', '23456753457', 6, 2, 1, 1, 'قثبىرلاابتننالايالاللالاساب', NULL, NULL, NULL, '23456753457'),
+(23, 'عادل', 'hoda@gmail.com', 1, '23456753452', '45678934567', '2002-04-08', 'Male', 'muslim', '01115467848', '01115467848', 'سلامة', '2345675347685', NULL, '01115467848', 'سلامة', '2345675347685', 'Alive', '01115467848', 'الاب', 'special', 0, 0, 0, '345', '66', 0, 'علمى رياضة', '23456753452', 6, 2, 1, 1, 'قثبىرلاابتننالايالاللالاساب', NULL, NULL, NULL, '23456753452'),
+(26, 'lila', 'lila@gmail.com', 0, '54673825467866', '12345678345', '2002-02-04', 'Female', 'muslim', '01112456375', '01112456375', 'ggggg', '01112456375456', NULL, '01112456375', 'gggg', '2223444566345', NULL, '01112456375', 'father', 'special', 0, 0, 0, '342', '77', 0, 'علمى رياضة', '54673825467866', 2, 4, 5, 122, 'dddddd', NULL, NULL, NULL, '54673825467866'),
+(28, 'saly', 'lila@gmail.com', 1, '54673825467899', '12345678345', '2005-02-05', 'Female', 'muslim', '01112456375', '01112456375', 'ggggg', '01112456375456', NULL, '01112456375', 'gggg', '2223444566345', 'Alive', '01112456375', 'father', 'special', 1, 0, 1, '342', '77', 0, 'ادبى', '54673825467899', 2, 4, 5, 122, 'dddddd', NULL, NULL, NULL, '54673825467899');
 
 -- --------------------------------------------------------
 
@@ -877,40 +873,40 @@ INSERT INTO `newstudent` (`id`, `name`, `image_url`, `Eygptian`, `nationalID`, `
 
 CREATE TABLE `oldstudent` (
   `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `image_url` varchar(255) NOT NULL,
-  `Eygptian` tinyint(1) NOT NULL,
-  `nationalID` varchar(14) NOT NULL,
-  `studentCode` varchar(11) NOT NULL,
-  `birthDate` date NOT NULL,
-  `gender` enum('Male','Female','','') NOT NULL,
-  `religion` enum('muslim','christian','','') NOT NULL,
-  `phoneNumber` varchar(11) NOT NULL,
-  `mobileNumber` varchar(11) NOT NULL,
-  `fatherName` varchar(255) NOT NULL,
-  `fatherNationalID` varchar(14) NOT NULL,
-  `fatherOccupation` varchar(255) NOT NULL,
-  `fatherPhone` varchar(11) NOT NULL,
-  `GuardianName` varchar(255) NOT NULL,
-  `GuardianNationalID` varchar(14) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `Eygptian` tinyint(1) DEFAULT NULL,
+  `nationalID` varchar(14) DEFAULT NULL,
+  `studentCode` varchar(11) DEFAULT NULL,
+  `birthDate` date DEFAULT NULL,
+  `gender` enum('Male','Female','','') DEFAULT NULL,
+  `religion` enum('muslim','christian','','') DEFAULT NULL,
+  `phoneNumber` varchar(11) DEFAULT NULL,
+  `mobileNumber` varchar(11) DEFAULT NULL,
+  `fatherName` varchar(255) DEFAULT NULL,
+  `fatherNationalID` varchar(14) DEFAULT NULL,
+  `fatherOccupation` varchar(255) DEFAULT NULL,
+  `fatherPhone` varchar(11) DEFAULT NULL,
+  `GuardianName` varchar(255) DEFAULT NULL,
+  `GuardianNationalID` varchar(14) DEFAULT NULL,
   `ParentsStatus` enum('Father Death','Parents Death','Parental Separation','') DEFAULT NULL,
-  `GuardianPhoneNumber` varchar(11) NOT NULL,
-  `GuardianRelation` varchar(255) NOT NULL,
-  `HousingType` enum('nonspecial','special','','') NOT NULL,
-  `successRate` decimal(10,0) NOT NULL,
-  `HousingWithoutCatering` tinyint(1) NOT NULL,
-  `HousingInPreviousYear` enum('Old','New','Interrupted','') NOT NULL,
-  `FamilyAbroad` tinyint(1) NOT NULL,
-  `SpecialNeed` tinyint(1) NOT NULL,
-  `password` varchar(14) NOT NULL,
-  `ConfirmPassword` varchar(14) NOT NULL,
-  `college_id` int(11) NOT NULL,
-  `Department` varchar(11) NOT NULL,
-  `level_id` int(11) NOT NULL,
-  `gpa_id` int(11) NOT NULL,
-  `governorate_id` int(11) NOT NULL,
-  `city_id` int(11) NOT NULL,
-  `address` varchar(255) NOT NULL,
+  `GuardianPhoneNumber` varchar(11) DEFAULT NULL,
+  `GuardianRelation` varchar(255) DEFAULT NULL,
+  `HousingType` enum('nonspecial','special','','') DEFAULT NULL,
+  `successRate` decimal(10,0) DEFAULT NULL,
+  `HousingWithoutCatering` tinyint(1) DEFAULT NULL,
+  `HousingInPreviousYear` enum('Old','New','Interrupted','') DEFAULT NULL,
+  `FamilyAbroad` tinyint(1) DEFAULT NULL,
+  `SpecialNeed` tinyint(1) DEFAULT NULL,
+  `password` varchar(14) DEFAULT NULL,
+  `ConfirmPassword` varchar(14) DEFAULT NULL,
+  `college_id` int(11) DEFAULT NULL,
+  `Department` varchar(11) DEFAULT NULL,
+  `level_id` int(11) DEFAULT NULL,
+  `gpa_id` int(11) DEFAULT NULL,
+  `governorate_id` int(11) DEFAULT NULL,
+  `city_id` int(11) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
   `admin_id` int(11) DEFAULT NULL,
   `employee_id` int(11) DEFAULT NULL,
   `building_id` int(11) DEFAULT NULL
@@ -920,16 +916,18 @@ CREATE TABLE `oldstudent` (
 -- Dumping data for table `oldstudent`
 --
 
-INSERT INTO `oldstudent` (`id`, `name`, `image_url`, `Eygptian`, `nationalID`, `studentCode`, `birthDate`, `gender`, `religion`, `phoneNumber`, `mobileNumber`, `fatherName`, `fatherNationalID`, `fatherOccupation`, `fatherPhone`, `GuardianName`, `GuardianNationalID`, `ParentsStatus`, `GuardianPhoneNumber`, `GuardianRelation`, `HousingType`, `successRate`, `HousingWithoutCatering`, `HousingInPreviousYear`, `FamilyAbroad`, `SpecialNeed`, `password`, `ConfirmPassword`, `college_id`, `Department`, `level_id`, `gpa_id`, `governorate_id`, `city_id`, `address`, `admin_id`, `employee_id`, `building_id`) VALUES
-(2, 'هدى محمد', '2bf2a787-58ef-4cc4-98b1-0e6570125da0.jpg', 1, '23456789532452', '12345678912', '2005-02-05', 'Female', 'muslim', '01134567288', '01134567288', 'محمد درويش', '01134567288342', 'طبيب', '01134567288', 'محمد', '01134567288342', NULL, '01112346545', 'الاب', 'nonspecial', '66', 0, 'Old', 0, 1, '23456789532452', '23456789532452', 1, 'عام', 8, 3, 1, 1, '', NULL, NULL, NULL),
-(3, 'على', 'images.png', 0, '23453423443562', '34565478345', '2000-04-08', 'Male', 'muslim', '01123456783', '01123456783', 'علاء', '23453423443568', '', '01123456783', 'علاء', '23453423443568', NULL, '01123456783', 'الاب', 'special', '88', 0, 'Old', 0, 0, '23453423443562', '23453423443562', 4, 'رسم', 4, 5, 4, 155, 'المطرية', NULL, NULL, NULL),
-(4, 'امير', '5a8f5ec4f6786ae9d5961eb6b59b0b53.jpg', 1, '87654367452345', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367452345', '87654367452345', 1, 'مدنى', 5, 10, 16, 281, 'اهناسيا', NULL, NULL, NULL),
-(5, 'حسن', '5a8f5ec4f6786ae9d5961eb6b59b0b53.jpg', 1, '87654367452366', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'nonspecial', '99', 1, 'Old', 0, 0, '87654367452366', '87654367452366', 18, 'مدنى', 5, 6, 21, 281, 'اهناسيا', NULL, NULL, NULL),
-(7, 'نبيل', 'images.png', 1, '8765436747754', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'nonspecial', '99', 1, 'Old', 0, 0, '8765436747754', '8765436747754', 4, 'مدنى', 4, 1, 3, 281, 'اهناسيا', NULL, NULL, NULL),
-(9, 'رحيم', 'images.png', 1, '87654367488', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'nonspecial', '99', 1, 'Old', 0, 0, '87654367488', '87654367488', 1, 'مدنى', 5, 6, 17, 79, 'اهناسيا', NULL, NULL, NULL),
-(11, 'سمير', 'images.png', 1, '87654367489', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367489', '87654367489', 1, 'مدنى', 5, 10, 12, 236, 'اهناسيا', NULL, NULL, NULL),
-(12, 'ابراهيم ', 'images.png', 1, '87654367483', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367483', '87654367483', 1, 'مدنى', 5, 10, 1, 1, 'اهناسيا', NULL, NULL, NULL),
-(13, 'حسين', 'images.png', 1, '87654367455', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367455', '87654367455', 5, 'مدنى', 3, 5, 1, 1, 'اهناسيا', NULL, NULL, NULL);
+INSERT INTO `oldstudent` (`id`, `name`, `email`, `Eygptian`, `nationalID`, `studentCode`, `birthDate`, `gender`, `religion`, `phoneNumber`, `mobileNumber`, `fatherName`, `fatherNationalID`, `fatherOccupation`, `fatherPhone`, `GuardianName`, `GuardianNationalID`, `ParentsStatus`, `GuardianPhoneNumber`, `GuardianRelation`, `HousingType`, `successRate`, `HousingWithoutCatering`, `HousingInPreviousYear`, `FamilyAbroad`, `SpecialNeed`, `password`, `ConfirmPassword`, `college_id`, `Department`, `level_id`, `gpa_id`, `governorate_id`, `city_id`, `address`, `admin_id`, `employee_id`, `building_id`) VALUES
+(2, 'هدى محمد', NULL, 0, '23456789532452', '12345678912', '2005-02-05', 'Female', 'muslim', '01134567288', '01134567288', 'محمد درويش', '01134567288342', 'طبيب', '01134567288', 'محمد', '01134567288342', NULL, '01112346545', 'الاب', 'nonspecial', '66', 0, 'Old', 0, 1, '23456789532452', '23456789532452', 1, 'عام', 8, 6, 1, 1, '', NULL, NULL, NULL),
+(3, 'على', 'ali@gmail.com', 1, '23453423443562', '34565478346', '2000-04-08', 'Male', 'muslim', '01123456783', '01123456783', 'علاء', '23453423443568', '', '01123456783', 'علاء', '23453423443568', NULL, '01123456783', 'الاب', 'nonspecial', '88', 0, 'Old', 0, 0, '23453423443562', '23453423443562', 4, 'رسم', 4, 5, 4, 155, 'المطرية', NULL, NULL, NULL),
+(4, 'امير', NULL, 1, '87654367452345', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367452345', '87654367452345', 1, 'مدنى', 5, 10, 16, 281, 'اهناسيا', NULL, NULL, NULL),
+(5, 'حسن', NULL, 1, '87654367452366', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'nonspecial', '99', 1, 'Old', 0, 0, '87654367452366', '87654367452366', 18, 'مدنى', 5, 6, 21, 281, 'اهناسيا', NULL, NULL, NULL),
+(7, 'نبيل', NULL, 1, '8765436747754', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'nonspecial', '99', 1, 'Old', 0, 1, '8765436747754', '8765436747754', 4, 'مدنى', 4, 1, 3, 281, 'اهناسيا', NULL, NULL, NULL),
+(9, 'رحيم', NULL, 1, '87654367488', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'nonspecial', '99', 1, 'Old', 0, 0, '87654367488', '87654367488', 1, 'مدنى', 5, 6, 17, 79, 'اهناسيا', NULL, NULL, NULL),
+(11, 'سمير', NULL, 1, '87654367489', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367489', '87654367489', 1, 'مدنى', 5, 10, 12, 236, 'اهناسيا', NULL, NULL, NULL),
+(12, 'ابراهيم ', NULL, 1, '87654367483', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367483', '87654367483', 1, 'مدنى', 5, 10, 1, 1, 'اهناسيا', NULL, NULL, NULL),
+(13, 'حسين', NULL, 1, '87654367455', '87654367452', '2002-09-05', 'Male', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', '', '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367455', '87654367455', 5, 'مدنى', 3, 5, 1, 1, 'اهناسيا', NULL, NULL, NULL),
+(14, 'علا', 'ola@gmail.com', 1, '87654367499', '87654367452', '2002-09-05', 'Female', 'christian', '01112345673', '01112345673', 'عمر', '87654367452345', NULL, '01234567843', 'عمر', '01234567843344', NULL, '01234567843', 'الاب', 'special', '99', 1, 'Old', 0, 0, '87654367499', '87654367499', 5, 'مدنى', 3, 5, 1, 1, 'اهناسيا', NULL, NULL, NULL),
+(15, 'lilta', 'lila@gmail.com', 1, '54673825467866', '12345678345', '2005-02-05', 'Female', 'muslim', '01112456375', '01112456375', 'ggggg', '01112456375456', NULL, '01112456375', 'gggg', '2223444566345', '', '01112456375', 'father', 'special', '88', 0, 'Old', 0, 0, '54673825467866', '54673825467866', 2, 'ggg', 4, 5, 5, 122, 'dddddd', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -950,10 +948,13 @@ CREATE TABLE `status1` (
 --
 
 INSERT INTO `status1` (`name`, `national_id`, `id`, `building_number`, `college_name`) VALUES
-('ولاء', '234567534 4', 49, 12, 'كلية السياحة و الفنادق'),
-('رحمة ', '23456789021345', 50, 4, 'كلية الهندسة بحلوان '),
-('طارق', '12345678912345', 51, 1, 'كلية الهندسة بحلوان '),
-('   اسماء محمد على', '23456789532443', 52, 2, 'كلية الحاسبات و المعلومات ');
+('   اسماء محمد على', '23456789532443', 67, 2, 'كلية الحاسبات و المعلومات '),
+('lila', '54673825467866', 108, 4, 'كلية التجارة'),
+('rrrr', '54673825467829', 109, 4, 'كلية التجارة'),
+('علياء', '23456753457', 110, 4, 'كلية السياحة و الفنادق'),
+('عادل', '23456753452', 111, 3, 'كلية السياحة و الفنادق'),
+('saly', '54673825467899', 112, 4, 'كلية التجارة'),
+('ولاء', '234567534 4', 113, 12, 'كلية السياحة و الفنادق');
 
 -- --------------------------------------------------------
 
@@ -974,10 +975,10 @@ CREATE TABLE `status2` (
 --
 
 INSERT INTO `status2` (`id`, `name`, `national_id`, `building_number`, `college_name`) VALUES
-(9, 'نبيل', '8765436747754', 3, 'كلية الفنون الجميلة'),
-(10, 'هدى محمد', '23456789532452', 2, 'كلية الهندسة بحلوان '),
-(11, 'على', '23453423443562', 3, 'كلية الفنون الجميلة'),
-(12, 'رحيم', '87654367488', 1, 'كلية الهندسة بحلوان ');
+(34, 'على', '23453423443562', 3, 'كلية الفنون الجميلة'),
+(36, 'نبيل', '8765436747754', 3, 'كلية الفنون الجميلة'),
+(38, 'هدى محمد', '23456789532452', 4, 'كلية الهندسة بحلوان '),
+(39, 'رحيم', '87654367488', 1, 'كلية الهندسة بحلوان ');
 
 --
 -- Indexes for dumped tables
@@ -1101,7 +1102,7 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT for table `buildings`
 --
 ALTER TABLE `buildings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `city`
@@ -1119,7 +1120,7 @@ ALTER TABLE `college`
 -- AUTO_INCREMENT for table `employee`
 --
 ALTER TABLE `employee`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `gba`
@@ -1143,25 +1144,25 @@ ALTER TABLE `levels`
 -- AUTO_INCREMENT for table `newstudent`
 --
 ALTER TABLE `newstudent`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `oldstudent`
 --
 ALTER TABLE `oldstudent`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `status1`
 --
 ALTER TABLE `status1`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT for table `status2`
 --
 ALTER TABLE `status2`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- Constraints for dumped tables
@@ -1178,7 +1179,7 @@ ALTER TABLE `buildings`
 --
 ALTER TABLE `buildingsemployee`
   ADD CONSTRAINT `building_constrain_id` FOREIGN KEY (`building_id`) REFERENCES `buildings` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `employee_constrain_id` FOREIGN KEY (`employee_id`) REFERENCES `employee` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `employee_constrain_id` FOREIGN KEY (`employee_id`) REFERENCES `employee` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `city`
