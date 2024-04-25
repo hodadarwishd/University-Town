@@ -9,7 +9,7 @@ const { body, validationResult } = require('express-validator');
 // Login route
 router.post("/login",
     body("name").isString(),
-    body("password").isLength({ min: 8, max: 11 }).withMessage("Please enter a valid password (8-11 characters)"),
+    body("password").isLength({ min: 8, max: 14 }).withMessage("Please enter a valid password (14 characters)"),
     async (req, res) => {
         try {
             // Validation of request parameters
@@ -20,7 +20,7 @@ router.post("/login",
 
             // Check if the user exists in the database
             const query = util.promisify(conn.query).bind(conn);
-            const user = await query("SELECT * FROM employee WHERE name = ?", [req.body.name]);
+            const user = await query("SELECT name, national_ID, password FROM employee WHERE password = ?", [req.body.password]);
 
             if (user.length === 0) {
                 return res.status(404).json({
@@ -30,10 +30,14 @@ router.post("/login",
                 });
             }
 
-           //i dont use bcrypt
+            // I don't use bcrypt
             if (req.body.password === user[0].password) {
                 // Passwords match
-                return res.status(200).json(user);
+                return res.status(200).json({
+                    name: user[0].name,
+                    national_ID: user[0].national_ID,
+                    password: user[0].password
+                });
             } else {
                 // Passwords do not match
                 return res.status(401).json({
@@ -50,7 +54,7 @@ router.post("/login",
 );
 
 
-//get all students ==>gender male 
+//get all students ==>gender male ==> old student 
 router.get("/maleStudents", async (req, res) => {
   try {
     const query = util.promisify(conn.query).bind(conn);
@@ -58,9 +62,7 @@ router.get("/maleStudents", async (req, res) => {
     // Example query to retrieve male students
     const maleStudents = await query(`
     SELECT * FROM oldstudent WHERE gender = 'Male'
-    UNION
-    SELECT * FROM newstudent WHERE gender = 'Male'
-   `);
+  `);
     res.status(200).json(maleStudents);
   } catch (err) {
     console.error(err);
@@ -68,7 +70,24 @@ router.get("/maleStudents", async (req, res) => {
   }
 });
 
-//get all students gender ===> female 
+//get all students ==>gender male ==> new student 
+router.get("/maleStudents2", async (req, res) => {
+  try {
+    const query = util.promisify(conn.query).bind(conn);
+
+    // Example query to retrieve male students
+    const maleStudents = await query(`
+    SELECT * FROM newstudent WHERE gender = 'Male'
+  `);
+    res.status(200).json(maleStudents);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+//get all students gender ===> female ==>old student
 router.get("/femaleStudents", async (req, res) => {
   try {
     const query = util.promisify(conn.query).bind(conn);
@@ -76,22 +95,55 @@ router.get("/femaleStudents", async (req, res) => {
     // Example query to retrieve male students
     const femaleStudents = await query(`
     SELECT * FROM oldstudent WHERE gender = 'Female'
-    UNION
-    SELECT * FROM newstudent WHERE gender = 'Female'
-   `);
+    `);
     res.status(200).json(femaleStudents);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+//get all students gender ===> female ==>new student 
+router.get("/femaleStudents2", async (req, res) => {
+  try {
+    const query = util.promisify(conn.query).bind(conn);
+
+    // Example query to retrieve male students
+    const femaleStudents = await query(`
+    SELECT * FROM newstudent WHERE gender = 'Female'
+    `);
+    res.status(200).json(femaleStudents);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+//get all buildings
+router.get("/getbuildings", async (req, res) => {
+  try {
+    const query = util.promisify(conn.query).bind(conn);
+
+    // Example query to retrieve male students
+    const buildings = await query(`
+    SELECT id, number, gender, number_of_rooms,number_of_floors FROM buildings 
+    `);
+    res.status(200).json(buildings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 // add building
 router.post("/addbuilding",
     body("number").isInt(),
     body('gender').isIn(['Male', 'Female']),
     body("number_of_rooms").isInt(),
     body("number_of_floors").isInt(),
-    body("admin_id").isInt(),
+   // body("admin_id").isInt(),
 
     async (req, res) => {
         try {
@@ -129,7 +181,7 @@ router.post("/addbuilding",
                 gender: req.body.gender,
                 number_of_rooms: req.body.number_of_rooms,
                 number_of_floors: req.body.number_of_floors,
-                admin_id: req.body.admin_id
+              //  admin_id: req.body.admin_id
             };
 
             // Insert object into the database
@@ -149,7 +201,7 @@ router.post("/addbuilding",
 body('gender').isIn(['Male', 'Female']),
 body("number_of_rooms").isInt(),
 body("number_of_floors").isInt(),
-body("admin_id").isInt(),
+//body("admin_id").isInt(),
 
  async (req, res) => {
      try {
@@ -173,7 +225,7 @@ body("admin_id").isInt(),
         gender:req.body.gender,
         number_of_rooms:req.body.number_of_rooms,
         number_of_floors:req.body.number_of_floors,
-        admin_id:req.body.admin_id
+        //admin_id:req.body.admin_id
      
       }
       
@@ -227,44 +279,56 @@ router.post('/filterAndInsertStudents1', async (req, res) => {
     // Filter students based on SpecialNeed condition
     const filteredStudents = await query(`
       SELECT * FROM newstudent
-      WHERE SpecialNeed = true
+      WHERE  Eygptian = true AND SpecialNeed = true AND HousingType = 'nonspecial'
     `);
 
-    // Insert filtered students into the "status1" table
+    // Inserted students array to store successfully inserted students
     const insertedStudents = [];
-    const errors = [];
 
+    // Loop through filtered students
     for (const student of filteredStudents) {
-      let building_number;
-      let collegeId;
-      let collegeName; // Added variable to store college name
+      // Check if the student already exists in the "status1" table based on their national ID
+      const existingStudent = await query(`
+        SELECT * FROM status1 WHERE national_id = ?
+      `, [student.nationalID]);
 
-      // Retrieve college_id for the current student
-      const collegeResult = await query(`
-        SELECT college_id FROM newstudent
-        WHERE id = ?
-      `, [student.id]);
+      // If student exists, push a message to the errors array
+      if (existingStudent.length > 0) {
+        insertedStudents.push({
+          message: `Student with national ID ${student.nationalID} has already been filtered`,
+        });
+      } else {
+        // If student does not exist, insert them into the "status1" table
+        let building_number;
+        let collegeId;
+        let collegeName; // Added variable to store college name
 
-      // Check if collegeResult is not empty
-      if (collegeResult.length > 0) {
-        collegeId = collegeResult[0].college_id;
+        // Retrieve college_id for the current student
+        const collegeResult = await query(`
+          SELECT college_id FROM newstudent
+          WHERE id = ?
+        `, [student.id]);
 
-        // Fetch college name based on college_id
-        const collegeNameResult = await query(`
-          SELECT name FROM college WHERE id = ?
-        `, [collegeId]);
+        // Check if collegeResult is not empty
+        if (collegeResult.length > 0) {
+          collegeId = collegeResult[0].college_id;
 
-        if (collegeNameResult.length > 0) {
-          collegeName = collegeNameResult[0].name;
-        } else {
-          collegeName = 'Unknown College'; // Set a default value if college name is not found
-        }
+          // Fetch college name based on college_id
+          const collegeNameResult = await query(`
+            SELECT name FROM college WHERE id = ?
+          `, [collegeId]);
+
+          if (collegeNameResult.length > 0) {
+            collegeName = collegeNameResult[0].name;
+          } else {
+            collegeName = 'Unknown College'; // Set a default value if college name is not found
+          }
 
         // Determine building_number based on college_id and gender
         if (collegeId === 1 || collegeId === 22 || collegeId === 3 || collegeId === 5) {
           // College 1 logic
           building_number = student.gender === 'Male' ? 1 : 2;
-        } else if (collegeId === 7 || collegeId === 4 || collegeId === 6 || collegeId === 10 || collegeId === 11 || collegeId === 16) {
+        } else if (collegeId === 7|| collegeId === 2 || collegeId === 4 || collegeId === 6 || collegeId === 10 || collegeId === 11 || collegeId === 16) {
           // College 2 logic
           building_number = student.gender === 'Male' ? 3 : 12;
         } else if (collegeId === 21 || collegeId === 18 || collegeId === 19 || collegeId === 20 || collegeId === 23) {
@@ -278,18 +342,12 @@ router.post('/filterAndInsertStudents1', async (req, res) => {
           building_number = null; // Change this to your default value
         }
 
-        // Check if the student already exists in status1
-        const existingStudent = await query(`
-          SELECT * FROM status1 WHERE national_id = ?
-        `, [student.nationalID]);
-
-        if (existingStudent.length === 0) {
-          // National ID doesn't exist, proceed with insertion
           const insertResult = await query(`
-            INSERT INTO status1 (name, national_id, building_number,  college_name)
-            VALUES (?, ?, ?,  ?)
-          `, [student.name, student.nationalID, building_number,  collegeName]);
+            INSERT INTO status1 (name, national_id, building_number, college_name)
+            VALUES (?, ?, ?, ?)
+          `, [student.name, student.nationalID, building_number, collegeName]);
 
+          // Push the inserted student data to the insertedStudents array
           insertedStudents.push({
             name: student.name,
             nationalID: student.nationalID,
@@ -297,22 +355,16 @@ router.post('/filterAndInsertStudents1', async (req, res) => {
             college_name: collegeName,
           });
         } else {
-          // National ID already exists, collect the error
-          errors.push(`Student with national ID ${student.nationalID} already filtered`);
+          // Push an error message if collegeResult is empty
+          insertedStudents.push({
+            message: `College information not found for student with ID ${student.id}`,
+          });
         }
-      } else {
-        // Handle the case when collegeResult is empty
-        errors.push(`College information not found for student with ID ${student.id}`);
       }
     }
 
-    if (errors.length > 0) {
-      // Return errors if any
-      return res.status(400).json({ errors });
-    } else {
-      // Return the successfully inserted students
-      res.status(200).json({ insertedStudents });
-    }
+    // Return the insertedStudents array in JSON format
+    res.status(200).json({ insertedStudents });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -416,6 +468,7 @@ router.post('/filterAndInsertStudents2', async (req, res) => {
 });
 
 //filter student are Egyptian HousingType is special or Arrival
+
 router.post('/filterAndInsertStudents3', async (req, res) => {
   try {
     const query = util.promisify(conn.query).bind(conn);
@@ -431,46 +484,74 @@ router.post('/filterAndInsertStudents3', async (req, res) => {
       WHERE Eygptian = true AND HousingType = 'special'
     `);
 
-    // Insert filtered students into the "status2" table
-    const insertedStudents = [];
+    // Collect filtered students and their details
+    const filteredStudentDetails = [];
     const errors = [];
 
     for (const student of filteredStudents) {
-      let building_number;
-      building_number = student.gender === 'Male' ? 3 : 4;
+      filteredStudentDetails.push({
+        name: student.name,
+        nationalID: student.nationalID,
+        gender: student.gender,
+        college_id: student.college_id
+      });
+    }
 
-      // Fetch college name based on college_id
-      const collegeResult = await query(`
-        SELECT name FROM college WHERE id = ?
-      `, [student.college_id]);
+    // Check if any filtered student already exists in the "status1" table based on their national ID
+    const existingStudents = await query(`
+      SELECT national_id FROM status1 WHERE national_id IN (?)
+    `, [filteredStudentDetails.map(student => student.nationalID)]);
 
-      if (collegeResult.length > 0) {
-        const collegeName = collegeResult[0].name;
+    // Collect the national IDs of existing students
+    const existingStudentIDs = existingStudents.map(student => student.national_id);
 
-        // Insert student data into status2 table with college name
-        const insertResult = await query(`
-            INSERT INTO status1 (name, national_id, building_number, college_name)
-            VALUES (?, ?, ?,  ?)
-          `, [student.name, student.nationalID, building_number, collegeName]);
-
-        insertedStudents.push({
-          name: student.name,
-          nationalID: student.nationalID,
-          building_number: building_number,
-          college_name: collegeName,
-        });
-      } else {
-        // Handle the case when collegeResult is empty
-        errors.push(`College information not found for student with college ID ${student.college_id}`);
+    // Check for students who already exist
+    for (const student of filteredStudentDetails) {
+      if (existingStudentIDs.includes(student.nationalID)) {
+        errors.push(`Student with national ID ${student.nationalID} already exists`);
       }
     }
 
-    if (errors.length > 0) {
+    // If no errors, insert the non-existing students into the "status1" table
+    if (errors.length === 0) {
+      const insertedStudents = [];
+
+      for (const student of filteredStudentDetails) {
+        let building_number;
+        building_number = student.gender === 'Male' ? 3 : 4;
+
+        // Fetch college name based on college_id
+        const collegeResult = await query(`
+          SELECT name FROM college WHERE id = ?
+        `, [student.college_id]);
+
+        if (collegeResult.length > 0) {
+          const collegeName = collegeResult[0].name;
+
+          // Insert student data into status1 table with college name
+          const insertResult = await query(`
+            INSERT INTO status1 (name, national_id, building_number, college_name)
+            VALUES (?, ?, ?, ?)
+          `, [student.name, student.nationalID, building_number, collegeName]);
+
+          // Push the inserted student data to the insertedStudents array
+          insertedStudents.push({
+            name: student.name,
+            nationalID: student.nationalID,
+            building_number: building_number,
+            college_name: collegeName,
+          });
+        } else {
+          // Push an error message if collegeResult is empty
+          errors.push(`College information not found for student with college ID ${student.college_id}`);
+        }
+      }
+
+      // Return the successfully inserted students
+      return res.status(200).json({ insertedStudents });
+    } else {
       // Return errors if any
       return res.status(400).json({ errors });
-    } else {
-      // Return the successfully inserted students
-      res.status(200).json({ insertedStudents });
     }
   } catch (err) {
     console.error(err);
@@ -487,7 +568,7 @@ router.post('/filterAndInsertStudents3', async (req, res) => {
     // Filter students based on condition
     const filteredStudents = await query(`
       SELECT * FROM newstudent
-      WHERE SpecialNeed = false AND HousingType = 'nonspecial' AND city_id IN (?, ?)
+      WHERE Eygptian=true AND  SpecialNeed = false AND HousingType = 'nonspecial' AND city_id IN (?, ?)
     `, [79, 236]);
 
     // Insert filtered students into the "status2" table
@@ -586,7 +667,7 @@ router.post('/filterAndInsertStudents5', async (req, res) => {
     // Filter students based on SpecialNeed condition
     const filteredStudents = await query(`
       SELECT * FROM oldstudent
-      WHERE SpecialNeed = true
+      WHERE Eygptian=true AND  SpecialNeed = true
     `);
 
     // Insert filtered students into the "status2" table
@@ -771,6 +852,7 @@ router.post('/filterAndInsertStudents6', async (req, res) => {
 
 //filter student are gpa i want  Egyptian HousingType is special or Arrival
  
+
 router.post('/filterAndInsertStudents7', async (req, res) => {
   try {
     const { gpa_id } = req.body; // Extract gpa_id from request body
@@ -792,53 +874,66 @@ router.post('/filterAndInsertStudents7', async (req, res) => {
       WHERE Eygptian = true AND HousingType = 'special' AND gpa_id = ?
     `, [gpa_id, gpa_id]);
 
-    // Insert filtered students into the "status2" table
+    // Check if filtered students already exist in the "status2" table
+    const existingStudents = await query(`
+      SELECT national_id FROM status2 WHERE national_id IN (?)
+    `, [filteredStudents.map(student => student.nationalID)]);
+
+    // Collect the national IDs of existing students
+    const existingStudentIDs = existingStudents.map(student => student.national_id);
+
+    // Inserted students array to store successfully inserted students
     const insertedStudents = [];
     const errors = [];
 
     for (const student of filteredStudents) {
-      let building_number;
-      building_number = student.gender === 'Male' ? 3 : 4;
-
-      // Fetch college name based on college_id
-      const collegeResult = await query(`
-        SELECT name FROM college WHERE id = ?
-      `, [student.college_id]);
-
-      if (collegeResult.length > 0) {
-        const collegeName = collegeResult[0].name;
-
-        // Insert student data into status2 table with college name
-        const insertResult = await query(`
-            INSERT INTO status2 (name, national_id, building_number, college_name)
-            VALUES (?, ?, ?,  ?)
-          `, [student.name, student.nationalID, building_number, collegeName]);
-
-        insertedStudents.push({
-          name: student.name,
-          nationalID: student.nationalID,
-          building_number: building_number,
-          college_name: collegeName,
-        });
+      if (existingStudentIDs.includes(student.nationalID)) {
+        // If student already exists, push a message to the errors array
+        errors.push(`Student with national ID ${student.nationalID} already exists in status2`);
       } else {
-        // Handle the case when collegeResult is empty
-        errors.push(`College information not found for student with college ID ${student.college_id}`);
+        let building_number;
+        building_number = student.gender === 'Male' ? 3 : 4;
+
+        // Fetch college name based on college_id
+        const collegeResult = await query(`
+          SELECT name FROM college WHERE id = ?
+        `, [student.college_id]);
+
+        if (collegeResult.length > 0) {
+          const collegeName = collegeResult[0].name;
+
+          // Insert student data into status2 table with college name
+          const insertResult = await query(`
+              INSERT INTO status2 (name, national_id, building_number, college_name)
+              VALUES (?, ?, ?, ?)
+            `, [student.name, student.nationalID, building_number, collegeName]);
+
+          // Push the inserted student data to the insertedStudents array
+          insertedStudents.push({
+            name: student.name,
+            nationalID: student.nationalID,
+            building_number: building_number,
+            college_name: collegeName,
+          });
+        } else {
+          // Push an error message if collegeResult is empty
+          errors.push(`College information not found for student with college ID ${student.college_id}`);
+        }
       }
     }
 
+    // Return errors if any
     if (errors.length > 0) {
-      // Return errors if any
       return res.status(400).json({ errors });
     } else {
       // Return the successfully inserted students
-      res.status(200).json({ insertedStudents });
+      return res.status(200).json({ insertedStudents });
     }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 // filter old student using gpa is request  in Giza ==> الواحات البحرية ==>   
  //القليوبية ==.كفر شكر 
